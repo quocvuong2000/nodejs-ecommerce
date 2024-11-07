@@ -11,7 +11,7 @@ app.use(compression());
 
 
 // init db
-require('./dbs/init.mongodb.lv0');
+require('./dbs/init.mongodb');
 
 app.get('/', (req, res) => {
   res.send('Hello World!');

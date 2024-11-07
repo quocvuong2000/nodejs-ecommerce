@@ -3,21 +3,21 @@
 const mongoose = require('mongoose');
 
 const conectionString = 'mongodb://localhost:27017/study-nodejs';
-
+const { countConnect } = require('../helpers/check.connect');
 class Database {
   constructor() {
     this.connect();
   }
 
   connect() {
-    if(1 === 1) {
+    if (1 === 1) {
       mongoose.set('debug', true);
       mongoose.set('debug', { color: true });
     }
     mongoose
       .connect(conectionString)
       .then(() => {
-        console.log('Connected to MongoDB PRO');
+        console.log('Connected to MongoDB PRO', countConnect());
       })
       .catch((err) => {
         console.log(err);
