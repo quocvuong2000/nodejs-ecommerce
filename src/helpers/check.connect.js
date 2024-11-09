@@ -13,15 +13,15 @@ const countConnect = () => {
 // Check overload connect
 const checkOverload = () => {
   setInterval(() => {
-    const countConnect = countConnect();
+    const numConnects = countConnect();
     const numCores = os.cpus().length;
     const memoryUsage = process.memoryUsage().rss;
 
-    console.log(`Number of connections: ${countConnect}`);
+    console.log(`Number of connections: ${numConnects}`);
     console.log(`Number of cores: ${numCores}`);
     console.log(`Memory usage: ${memoryUsage / 1024 / 1024} MB`);
 
-    if (countConnect > numCores) {
+    if (numConnects > numCores) {
       console.log('connection overload');
     }
   }, [_SECONDS]);
