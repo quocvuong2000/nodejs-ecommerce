@@ -1,13 +1,13 @@
 const app = require("./src/app");
-
-const PORT = process.env.PORT || 5022;
-const server = app.listen(5022, () => {
-  console.log(`Server running on port ${PORT}`);
+const config = require("./src/configs/config.mongodb");
+const server = app.listen(config.app.port, () => {
+  console.log(`Server running on port ${config.app.port}`);
 });
-
+process.stdin.resume();
 process.on("SIGINT", () => {
   server.close(() => {
     console.log("Server closed");
+    process.exit();
   });
 });
 
