@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const KeyTokenService = require('./keyToken.service');
 const { createTokenPair } = require('../auth/authUtils');
+const { getInfoDatas } = require('../utils/helper');
 
 const RoleShop = {
   SHOP: 'SHOP',
@@ -54,7 +55,7 @@ class AccessService {
             message: 'Public key string error',
           };
         }
-        
+
         // create token pair
         const tokens = await createTokenPair(
           { userId: newShop._id, email: newShop.email },
@@ -64,7 +65,10 @@ class AccessService {
 
         return {
           code: 201,
-          newShop,
+          shop  : getInfoDatas({
+            fields: ['name', 'email', '_id'],
+            data: newShop
+          }),
           tokens,
         };
       }
