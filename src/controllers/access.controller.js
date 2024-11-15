@@ -8,12 +8,7 @@ class AccessController {
       200 OK
       201 Created
     */
-    try {
-      console.log('Access');
       return res.status(201).json(await AccessService.signup(req.body));
-    } catch (error) {
-      next(error);
-    }
   }
 }
 
