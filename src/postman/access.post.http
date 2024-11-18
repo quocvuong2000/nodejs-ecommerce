@@ -1,11 +1,12 @@
-@url_dev=http://localhost:3052/v1/api
+@host=3056
+@url_dev=http://localhost:{{host}}/v1/api
 
 POST {{url_dev}}/shop/signup
 Content-Type: application/json
-x-api-key: 9a181ddad1ba85230aafbca34841bdf2be73bdd5bf53fc8d22f49255655818b0602395e4e9e808fb386bc8104f08a277f321ec327453cc852f31a1a59e2d337e
+x-api-key: 
 
 {
-  "name" : "vuongtest",
-  "email" : "vuong01@test.com",
-  "password" : "tfezst"
+  "name" : "vuongtest01",
+  "email" : "vuong333@test.com",
+  "password" : "quocvuong42"
 }
