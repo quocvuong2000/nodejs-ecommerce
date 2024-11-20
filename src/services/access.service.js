@@ -6,11 +6,7 @@ const KeyTokenService = require('./keyToken.service');
 const { createTokenPairAndVerify } = require('../auth/authUtils');
 const { getInfoDatas, generateKeyPair } = require('../utils/helper');
 
-const {
-  BadRequestError,
-  ConflictRequestError,
-  AuthFailureError,
-} = require('../core/error.response');
+const { BadRequestError, AuthFailureError } = require('../core/error.response');
 const { findByEmail } = require('./shop.service');
 const RoleShop = {
   SHOP: 'SHOP',
@@ -20,6 +16,9 @@ const RoleShop = {
 };
 
 class AccessService {
+  static logout = async ({ keyStore }) => {
+    return delKey = await KeyTokenService.removeKeyById(keyStore);
+  };
   /*
     1- Check email in dbs
     2- Match password
@@ -35,7 +34,8 @@ class AccessService {
     if (!match) throw new AuthFailureError('');
     const { publicKey, privateKey } = generateKeyPair();
 
-    //GENERATE AT AND RT
+    // GENERATE AT AND RT
+    // LOGIN USING USERID , LOGOUT USING USERID TOO
     const tokens = await createTokenPairAndVerify(
       { userId: foundShop._id, email: foundShop.email },
       publicKey,
@@ -73,7 +73,7 @@ class AccessService {
     });
     if (newShop) {
       const { publicKey, privateKey } = generateKeyPair();
-      console.log(publicKey,privateKey);
+      console.log(publicKey, privateKey);
       // create token pair
       const tokens = await createTokenPairAndVerify(
         { userId: newShop._id, email: newShop.email },
