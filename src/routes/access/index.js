@@ -8,6 +8,7 @@ const {authentication} = require('../../auth/authUtils');
 
 router.post('/shop/signup', asyncHandler(AccessController.signup));
 router.post('/shop/login', asyncHandler(AccessController.login));
+router.post('/shop/refreshToken', asyncHandler(AccessController.handleRefreshToken));
 
 // AUTHENTICATION MIDDLEWARE
 router.use(authentication);

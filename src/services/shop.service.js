@@ -9,7 +9,7 @@ const findByEmail = async ({
     roles: 1,
   },
 }) => {
-  return ShopModel.findOne({ email }).select(select).lean();
+  return ShopModel.findOne({ email }).select(select);
 };
 
 module.exports = {

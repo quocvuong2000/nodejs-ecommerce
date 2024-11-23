@@ -11,6 +11,17 @@ const { AuthFailureError, NotFoundError } = require('../core/error.response');
 //service
 const KeyTokenService = require('../services/keyToken.service');
 
+const verifyJWT = (accessToken, publicKey) => {
+  return JWT.verify(accessToken, publicKey, (_, decode) => {
+    if (decode) {
+      console.log('verify success', decode);
+      return decode
+    } else {
+      throw new AuthFailureError('Verify JWT token failed');
+    }
+  });
+};
+
 const createTokenPairAndVerify = async (payload, publicKey, privateKey) => {
   try {
     const accessToken = await JWT.sign(payload, privateKey, {
@@ -22,13 +33,7 @@ const createTokenPairAndVerify = async (payload, publicKey, privateKey) => {
       expiresIn: '7d',
     });
 
-    JWT.verify(accessToken, publicKey, (error, decode) => {
-      if (decode) {
-        console.log('verify success', decode);
-      } else {
-        console.error('error verify', error);
-      }
-    });
+    verifyJWT(accessToken, publicKey);
 
     return { accessToken, refreshToken };
   } catch (error) {
@@ -70,4 +75,4 @@ const authentication = asyncHandler(async (req, res, next) => {
   }
 });
 
-module.exports = { createTokenPairAndVerify, authentication };
+module.exports = { createTokenPairAndVerify, verifyJWT, authentication };
