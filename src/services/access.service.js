@@ -1,13 +1,13 @@
 'use strict';
 const shopModel = require('../models/shop.model');
 const bcrypt = require('bcrypt');
-const crypto = require('crypto');
 const KeyTokenService = require('./keyToken.service');
 const { createTokenPairAndVerify } = require('../auth/authUtils');
 const { getInfoDatas, generateKeyPair } = require('../utils/helper');
 
 const { BadRequestError, AuthFailureError } = require('../core/error.response');
 const { findByEmail } = require('./shop.service');
+const { createPermissionApiKey } = require('./apiKey.service');
 const RoleShop = {
   SHOP: 'SHOP',
   WRITER: 'WRITER',
@@ -16,8 +16,8 @@ const RoleShop = {
 };
 
 class AccessService {
-  static logout = async ({ keyStore }) => {
-    return delKey = await KeyTokenService.removeKeyById(keyStore);
+  static logout = async (keyStore) => {
+    return await KeyTokenService.removeKeyById(keyStore);
   };
   /*
     1- Check email in dbs
@@ -102,6 +102,12 @@ class AccessService {
       code: 200,
       metadata: null,
     };
+  };
+
+  static generateApiPermissionKey = async () => {
+    console.log('generateApiPermissionKey');
+    const key = await createPermissionApiKey(['0000']);
+    return key;
   };
 }
 

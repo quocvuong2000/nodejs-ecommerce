@@ -12,6 +12,8 @@ router.post('/shop/login', asyncHandler(AccessController.login));
 // AUTHENTICATION MIDDLEWARE
 router.use(authentication);
 
+router.post('/shop/logout', asyncHandler(AccessController.logout));
+
 //////////////
 
 module.exports = router;

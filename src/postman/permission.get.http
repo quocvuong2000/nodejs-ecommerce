@@ -1,0 +1,5 @@
+@host=3056
+@url_dev=http://localhost:{{host}}
+
+GET {{url_dev}}/permission
+Content-Type: application/json

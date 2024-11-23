@@ -4,12 +4,17 @@ const { CREATED, SuccessResponse } = require('../core/success.response');
 const AccessService = require('../services/access.service');
 
 class AccessController {
-  async login(req, res, next) {
+  async logout(req, res) {
+    return new SuccessResponse({
+      metadata : await AccessService.logout(req.keyStore),
+    }).send(res);
+  }
+  async login(req, res) {
     return new SuccessResponse({
       metadata : await AccessService.login(req.body),
     }).send(res);
   }
-  async signup(req, res, next) {
+  async signup(req, res) {
     /*
       200 OK
       201 Created
