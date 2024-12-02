@@ -6,7 +6,7 @@ Content-Type: application/json
 x-api-key: 
 
 {
-  "name" : "vuongtest01",
-  "email" : "vuong333@test.com",
+  "name" : "vuongadmin",
+  "email" : "vuongadmin@test.com",
   "password" : "quocvuong42"
 }

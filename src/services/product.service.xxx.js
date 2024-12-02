@@ -1,11 +1,16 @@
-'use strict';
+"use strict";
 
 const {
   product,
   clothing,
   electronic,
   furniture,
-} = require('../models/product.model');
+} = require("../models/product.model");
+const {
+  publishProductByShop,
+  findAllDraftsForShop,
+  findAllPublishedForShop
+} = require("../models/repositories/product.repo");
 
 //Define Factory class to create product
 
@@ -22,12 +27,25 @@ class ProductFactory {
 
   static async createProduct(type, payload) {
     const productClass = ProductFactory.productRegistry[type];
-
-    if (!productClass) {
-      throw new BadRequestError('Invalid product type');
-    }
-
+    if (!productClass) throw new BadRequestError("Invalid product type");
     return new productClass(payload).createProduct();
+  }
+
+  // PUT //
+  static async updateProductByShop({ product_shop, product_id }) {
+    return await publishProductByShop({ product_shop, product_id });
+  }
+  // END PUT //
+
+  // QUERY //
+  static async findAllDraftsForShop({ product_shop, limit = 50, skip = 0 }) {
+    const query = { isDraft: true, product_shop };
+    return await findAllDraftsForShop({ query, limit, skip });
+  }
+
+  static async findAllPublishedForShop({ product_shop, limit = 50, skip = 0 }) {
+    const query = { isPublished: true, product_shop };
+    return await findAllPublishedForShop({ query, limit, skip });
   }
 }
 
@@ -64,10 +82,10 @@ class Clothing extends Product {
   async createProduct() {
     const newClothing = await clothing.create(this.product_attributes);
     if (!newClothing) {
-      return new BadRequestError('Create new cloth error');
+      return new BadRequestError("Create new cloth error");
     }
-    const newProduct = await super.createProduct();
-    if (!newProduct) return new BadRequestError('Create new product error');
+    const newProduct = await super.createProduct(newClothing._id);
+    if (!newProduct) return new BadRequestError("Create new product error");
 
     return newProduct;
   }
@@ -81,10 +99,10 @@ class Electronic extends Product {
       product_shop: this.product_shop,
     });
     if (!newElectronic) {
-      return new BadRequestError('Create new electronic error');
+      return new BadRequestError("Create new electronic error");
     }
     const newProduct = await super.createProduct(newElectronic._id);
-    if (!newProduct) return new BadRequestError('Create new product error');
+    if (!newProduct) return new BadRequestError("Create new product error");
 
     return newProduct;
   }
@@ -98,18 +116,18 @@ class Furniture extends Product {
       product_shop: this.product_shop,
     });
     if (!newFurniture) {
-      return new BadRequestError('Create new Furniture error');
+      return new BadRequestError("Create new Furniture error");
     }
     const newProduct = await super.createProduct(newFurniture._id);
-    if (!newProduct) return new BadRequestError('Create new product error');
+    if (!newProduct) return new BadRequestError("Create new product error");
 
     return newProduct;
   }
 }
 
 //register product types
-ProductFactory.registerProductType('Clothing', Clothing);
-ProductFactory.registerProductType('Electronic', Electronic);
-ProductFactory.registerProductType('Furniture', Furniture);
+ProductFactory.registerProductType("Clothing", Clothing);
+ProductFactory.registerProductType("Electronic", Electronic);
+ProductFactory.registerProductType("Furniture", Furniture);
 
 module.exports = ProductFactory;
