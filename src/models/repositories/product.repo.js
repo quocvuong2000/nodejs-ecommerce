@@ -18,6 +18,13 @@ const queryProduct = async ({ query, limit, skip }) => {
     .lean()
     .exec();
 };
+
+const searchProductByUser = async ({ keySearch }) => {
+  const regexSearch = new RegExp(keySearch, "i");
+  const resutls = await product
+  return await queryProduct({ query, limit, skip });
+};
+
 const findAllDraftsForShop = async ({ query, limit, skip }) => {
   return await queryProduct({ query, limit, skip });
 };
@@ -37,8 +44,20 @@ const publishProductByShop = async ({ product_shop, product_id }) => {
   return modifiedCount;
 };
 
+const unPublishProductByShop = async ({ product_shop, product_id }) => {
+  const shopFound = await product.findOne({ _id: product_id, product_shop });
+  if (!shopFound) return null;
+
+  shopFound.isDraft = true;
+  shopFound.isPublished = false;
+  const { modifiedCount } = await shopFound.updateOne(shopFound);
+
+  return modifiedCount;
+};
+
 module.exports = {
   findAllDraftsForShop,
   publishProductByShop,
+  unPublishProductByShop,
   findAllPublishedForShop,
 };

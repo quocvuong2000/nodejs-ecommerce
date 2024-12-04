@@ -46,6 +46,27 @@ class ProductController {
     }).send(res);
   };
   // END QUERY //
+
+  // PUT //
+  publishProductByShop = async (req, res) => {
+    return new SuccessResponse({
+      message: "Publish product successfully",
+      metadata: await ProductFactoryV2.publishProductByShop({
+        product_shop: req.user.userId,
+        product_id: req.params.id,
+      }),
+    }).send(res);
+  };
+  unPublishProductByShop = async (req, res) => {
+    return new SuccessResponse({
+      message: "Unpublish product successfully",
+      metadata: await ProductFactoryV2.unPublishProductByShop({
+        product_shop: req.user.userId,
+        product_id: req.params.id,
+      }),
+    }).send(res);
+  };
+  // END PUT //
 }
 
 module.exports = new ProductController();

@@ -9,7 +9,8 @@ const {
 const {
   publishProductByShop,
   findAllDraftsForShop,
-  findAllPublishedForShop
+  unPublishProductByShop,
+  findAllPublishedForShop,
 } = require("../models/repositories/product.repo");
 
 //Define Factory class to create product
@@ -32,9 +33,14 @@ class ProductFactory {
   }
 
   // PUT //
-  static async updateProductByShop({ product_shop, product_id }) {
+  static async publishProductByShop({ product_shop, product_id }) {
     return await publishProductByShop({ product_shop, product_id });
   }
+
+  static async unPublishProductByShop({ product_shop, product_id }) {
+    return await unPublishProductByShop({ product_shop, product_id });
+  }
+
   // END PUT //
 
   // QUERY //
@@ -47,6 +53,8 @@ class ProductFactory {
     const query = { isPublished: true, product_shop };
     return await findAllPublishedForShop({ query, limit, skip });
   }
+
+  static async searchProducts ({ query, limit = 50, skip = 0 }) {}
 }
 
 // define base product class
