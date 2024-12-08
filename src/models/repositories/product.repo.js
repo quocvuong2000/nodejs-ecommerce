@@ -1,16 +1,16 @@
-"use strict";
+'use strict';
 
 const {
   product,
   clothing,
   electronic,
   furniture,
-} = require("../product.model");
+} = require('../product.model');
 
 const queryProduct = async ({ query, limit, skip }) => {
   return await product
     .find(query)
-    .populate("product_shop", "name email -_id")
+    .populate('product_shop', 'name email -_id')
     // Return the newest
     .sort({ updatedAt: -1 })
     .limit(limit)
@@ -19,10 +19,21 @@ const queryProduct = async ({ query, limit, skip }) => {
     .exec();
 };
 
-const searchProductByUser = async ({ keySearch }) => {
-  const regexSearch = new RegExp(keySearch, "i");
+const searchProducts = async ({ keySearch }) => {
+  const regexSearch = new RegExp(keySearch);
   const resutls = await product
-  return await queryProduct({ query, limit, skip });
+    .find(
+      {
+        isDraft: false,
+        $text: { $search: regexSearch },
+      },
+      {
+        score: { $meta: 'textScore' },
+      }
+    )
+    .sort({ score: { $meta: 'textScore' } })
+    .lean();
+  return resutls;
 };
 
 const findAllDraftsForShop = async ({ query, limit, skip }) => {
@@ -55,9 +66,42 @@ const unPublishProductByShop = async ({ product_shop, product_id }) => {
   return modifiedCount;
 };
 
+const findAllProducts = async ({ limit, sort, page, filter, select }) => {
+  const skip = (page - 1) * limit;
+  const sortBy = sort === 'ctime' ? { _id: -1 } : { _id: 1 };
+  return await product
+    .find(filter)
+    .sort(sortBy)
+    .select(select)
+    .limit(limit)
+    .skip(skip)
+    .lean();
+};
+
+//findone
+const findProduct = async ({ id, select }) => {
+  return await product.findById(id).select(select).lean();
+};
+
+const getAllProducts = async ({ select, limit, page }) => {
+  const skip = (page - 1) * limit;
+  return await product
+    .find({
+      isDraft: false,
+    })
+    .select(select)
+    .limit(limit)
+    .skip(skip)
+    .lean();
+};
+
 module.exports = {
   findAllDraftsForShop,
   publishProductByShop,
   unPublishProductByShop,
   findAllPublishedForShop,
+  searchProducts,
+  findAllProducts,
+  findProduct,
+  getAllProducts,
 };

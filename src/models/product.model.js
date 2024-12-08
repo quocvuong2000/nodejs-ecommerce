@@ -1,12 +1,12 @@
-"use strict";
-const { model, Schema } = require("mongoose"); // Erase if already required 516K (gzipped: 124.1K)
-const { default: slugify } = require("slugify");
-const DOCUMENT_NAME = "Product";
+'use strict';
+const { model, Schema } = require('mongoose'); // Erase if already required 516K (gzipped: 124.1K)
+const { default: slugify } = require('slugify');
+const DOCUMENT_NAME = 'Product';
 
-const COLLECTION_NAME = "Products";
-const CLOTH_COLLECTION_NAME = "Clothes";
-const ELEC_COLLECTION_NAME = "Electronics";
-const FURN_COLLECTION_NAME = "Furnitures";
+const COLLECTION_NAME = 'Products';
+const CLOTH_COLLECTION_NAME = 'Clothes';
+const ELEC_COLLECTION_NAME = 'Electronics';
+const FURN_COLLECTION_NAME = 'Furnitures';
 
 const productSchema = new Schema(
   {
@@ -19,15 +19,15 @@ const productSchema = new Schema(
     product_type: {
       type: String,
       required: true,
-      enum: ["Electronics", "Clothing", "Furniture"],
+      enum: ['Electronics', 'Clothing', 'Furniture'],
     },
-    product_shop: { type: Schema.Types.ObjectId, ref: "Shop" },
+    product_shop: { type: Schema.Types.ObjectId, ref: 'Shop' },
     product_attributes: { type: Schema.Types.Mixed, required: true },
     product_ratingAverage: {
       type: Number,
       default: 4.5,
-      min: [0, "Rating must be at least 0"],
-      max: [5, "Rating must be at most 5"],
+      min: [0, 'Rating must be at least 0'],
+      max: [5, 'Rating must be at most 5'],
       // 4.345666 -> 4.3
       set: (val) => Math.round(val * 10) / 10,
     },
@@ -40,9 +40,14 @@ const productSchema = new Schema(
     timestamps: true,
   }
 );
+// create index for search
+productSchema.index({
+  product_name: 'text',
+  product_description: 'text',
+});
 
 // Document middleware run before .save() and .create()
-productSchema.pre("save", function (next) {
+productSchema.pre('save', function (next) {
   this.product_slug = slugify(this.product_name, { lower: true });
   next();
 });
@@ -53,7 +58,7 @@ const clothingSchema = new Schema(
     brand: { type: String, require: true },
     size: String,
     material: String,
-    product_shop: { type: Schema.Types.ObjectId, ref: "Shop" },
+    product_shop: { type: Schema.Types.ObjectId, ref: 'Shop' },
   },
   {
     collection: CLOTH_COLLECTION_NAME,
@@ -66,7 +71,7 @@ const electronicSchema = new Schema(
     manufacturer: { type: String, require: true },
     model: String,
     color: String,
-    product_shop: { type: Schema.Types.ObjectId, ref: "Shop" },
+    product_shop: { type: Schema.Types.ObjectId, ref: 'Shop' },
   },
   {
     collection: ELEC_COLLECTION_NAME,
@@ -79,7 +84,7 @@ const furnitureSchema = new Schema(
     material: { type: String, require: true },
     size: String,
     color: String,
-    product_shop: { type: Schema.Types.ObjectId, ref: "Shop" },
+    product_shop: { type: Schema.Types.ObjectId, ref: 'Shop' },
   },
   {
     collection: FURN_COLLECTION_NAME,
@@ -88,7 +93,7 @@ const furnitureSchema = new Schema(
 );
 module.exports = {
   product: model(DOCUMENT_NAME, productSchema),
-  electronic: model("Electronics", electronicSchema),
-  clothing: model("Clothing", clothingSchema),
-  furniture: model("Furniture", furnitureSchema),
+  electronic: model('Electronics', electronicSchema),
+  clothing: model('Clothing', clothingSchema),
+  furniture: model('Furniture', furnitureSchema),
 };
