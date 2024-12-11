@@ -1,16 +1,16 @@
-'use strict';
+"use strict";
 
 const {
   product,
   clothing,
   electronic,
   furniture,
-} = require('../product.model');
+} = require("../product.model");
 
 const queryProduct = async ({ query, limit, skip }) => {
   return await product
     .find(query)
-    .populate('product_shop', 'name email -_id')
+    .populate("product_shop", "name email -_id")
     // Return the newest
     .sort({ updatedAt: -1 })
     .limit(limit)
@@ -28,12 +28,21 @@ const searchProducts = async ({ keySearch }) => {
         $text: { $search: regexSearch },
       },
       {
-        score: { $meta: 'textScore' },
+        score: { $meta: "textScore" },
       }
     )
-    .sort({ score: { $meta: 'textScore' } })
+    .sort({ score: { $meta: "textScore" } })
     .lean();
   return resutls;
+};
+
+const findAndUpdateProduct = async ({
+  productId,
+  payload,
+  model,
+  options = { new: true },
+}) => {
+  return await model.findByIdAndUpdate(productId, payload, options);
 };
 
 const findAllDraftsForShop = async ({ query, limit, skip }) => {
@@ -68,7 +77,7 @@ const unPublishProductByShop = async ({ product_shop, product_id }) => {
 
 const findAllProducts = async ({ limit, sort, page, filter, select }) => {
   const skip = (page - 1) * limit;
-  const sortBy = sort === 'ctime' ? { _id: -1 } : { _id: 1 };
+  const sortBy = sort === "ctime" ? { _id: -1 } : { _id: 1 };
   return await product
     .find(filter)
     .sort(sortBy)
@@ -104,4 +113,5 @@ module.exports = {
   findAllProducts,
   findProduct,
   getAllProducts,
+  findAndUpdateProduct
 };

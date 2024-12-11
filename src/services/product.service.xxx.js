@@ -1,11 +1,11 @@
-'use strict';
+"use strict";
 
 const {
   product,
   clothing,
   electronic,
   furniture,
-} = require('../models/product.model');
+} = require("../models/product.model");
 const {
   publishProductByShop,
   findAllDraftsForShop,
@@ -14,11 +14,12 @@ const {
   searchProducts,
   getAllProducts,
   findProduct,
-} = require('../models/repositories/product.repo');
+  findAndUpdateProduct,
+} = require("../models/repositories/product.repo");
 const {
   unSelectMongooseFields,
   selectMongooseFields,
-} = require('../utils/helper');
+} = require("../utils/helper");
 
 //Define Factory class to create product
 
@@ -35,8 +36,14 @@ class ProductFactory {
 
   static async createProduct(type, payload) {
     const productClass = ProductFactory.productRegistry[type];
-    if (!productClass) throw new BadRequestError('Invalid product type');
+    if (!productClass) throw new BadRequestError("Invalid product type");
     return new productClass(payload).createProduct();
+  }
+
+  static async updateProduct(type, productId, payload) {
+    const productClass = ProductFactory.productRegistry[type];
+    if (!productClass) throw new BadRequestError("Invalid product type");
+    return new productClass(payload).updateProduct(productId);
   }
 
   // PUT //
@@ -63,11 +70,11 @@ class ProductFactory {
 
   static async getAllProducts({
     select = selectMongooseFields([
-      '_id',
-      'product_name',
-      'product_price',
-      'product_thumb',
-      'product_description',
+      "_id",
+      "product_name",
+      "product_price",
+      "product_thumb",
+      "product_description",
     ]),
     limit = 50,
     page = 1,
@@ -82,7 +89,7 @@ class ProductFactory {
   static async getDetailProduct({ product_id }) {
     return await findProduct({
       id: product_id,
-      select: unSelectMongooseFields(['__v', 'product_variants']),
+      select: unSelectMongooseFields(["__v", "product_variants"]),
     });
   }
 
@@ -117,6 +124,10 @@ class Product {
   async createProduct(product_id) {
     return await product.create({ ...this, _id: product_id });
   }
+
+  async updateProduct({ productId, payload }) {
+    return await findAndUpdateProduct({ productId, payload, model: product });
+  }
 }
 
 // Define sub-class for each Clothing type
@@ -124,12 +135,29 @@ class Clothing extends Product {
   async createProduct() {
     const newClothing = await clothing.create(this.product_attributes);
     if (!newClothing) {
-      return new BadRequestError('Create new cloth error');
+      return new BadRequestError("Create new cloth error");
     }
     const newProduct = await super.createProduct(newClothing._id);
-    if (!newProduct) return new BadRequestError('Create new product error');
+    if (!newProduct) return new BadRequestError("Create new product error");
 
     return newProduct;
+  }
+
+  async updateProduct(productId) {
+    const paramsObject = updatedNestedObject(this);
+    const productAttribute = this.product_attributes;
+    if (productAttribute) {
+      // update child
+      return await clothing.findByIdAndUpdate(
+        productId,
+        updatedNestedObject(productAttribute)
+      );
+    }
+    return await findAndUpdateProduct({
+      productId: productId,
+      payload: paramsObject,
+      model: clothing,
+    });
   }
 }
 
@@ -141,10 +169,10 @@ class Electronic extends Product {
       product_shop: this.product_shop,
     });
     if (!newElectronic) {
-      return new BadRequestError('Create new electronic error');
+      return new BadRequestError("Create new electronic error");
     }
     const newProduct = await super.createProduct(newElectronic._id);
-    if (!newProduct) return new BadRequestError('Create new product error');
+    if (!newProduct) return new BadRequestError("Create new product error");
 
     return newProduct;
   }
@@ -158,18 +186,18 @@ class Furniture extends Product {
       product_shop: this.product_shop,
     });
     if (!newFurniture) {
-      return new BadRequestError('Create new Furniture error');
+      return new BadRequestError("Create new Furniture error");
     }
     const newProduct = await super.createProduct(newFurniture._id);
-    if (!newProduct) return new BadRequestError('Create new product error');
+    if (!newProduct) return new BadRequestError("Create new product error");
 
     return newProduct;
   }
 }
 
 //register product types
-ProductFactory.registerProductType('Clothing', Clothing);
-ProductFactory.registerProductType('Electronic', Electronic);
-ProductFactory.registerProductType('Furniture', Furniture);
+ProductFactory.registerProductType("Clothing", Clothing);
+ProductFactory.registerProductType("Electronic", Electronic);
+ProductFactory.registerProductType("Furniture", Furniture);
 
 module.exports = ProductFactory;
