@@ -37,15 +37,7 @@ const unSelectMongooseFields = (fields) => {
   );
 };
 
-const deleteUndefinedField = (obj) => {
-  Object.keys(obj).forEach((key) => {
-    const value = obj[key];
-    if (typeof value === undefined) {
-      delete obj[key];
-    }
-  });
-  return obj;
-};
+
 
 /*
   const a = {
@@ -85,4 +77,5 @@ module.exports = {
   generateKeyPair,
   selectMongooseFields,
   unSelectMongooseFields,
+  unSelectMongooseFields
 };
