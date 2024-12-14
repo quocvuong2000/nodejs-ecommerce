@@ -39,9 +39,9 @@ class DiscountService {
     } = payload;
 
     // check if date is valid
-    if (new Date() < new Date(start_date) || new Date() > new Date(end_date)) {
-      throw new BadRequestError("Discount code has expired!");
-    }
+    // if (new Date() < new Date(start_date) || new Date() > new Date(end_date)) {
+    //   throw new BadRequestError("Discount code has expired!");
+    // }
 
     // create index for discount code
     const foundDiscount = await discount.findOne({
