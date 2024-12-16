@@ -87,7 +87,7 @@ const findAllProducts = async ({ limit, sort, page, filter, select }) => {
     .lean();
 };
 
-//findone
+// findone
 const findProduct = async ({ id, select }) => {
   return await product.findById(id).select(select).lean();
 };
@@ -104,6 +104,9 @@ const getAllProducts = async ({ select, limit, page }) => {
     .lean();
 };
 
+const getProductById = async ({ id, select }) => {
+  return await product.findById(id).select(select).lean();
+};
 module.exports = {
   findAllDraftsForShop,
   publishProductByShop,
@@ -113,5 +116,6 @@ module.exports = {
   findAllProducts,
   findProduct,
   getAllProducts,
-  findAndUpdateProduct
+  findAndUpdateProduct,
+  getProductById,
 };
