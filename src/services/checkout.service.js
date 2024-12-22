@@ -103,6 +103,12 @@ class CheckoutService {
       checkout_order,
     };
   }
+
+  /*
+    1. Kiểm kê lại đơn hàng có đúng hay không
+    2. Check trong kho hàng (inventory) có tồn tại đủ sl hàng mà người dùng có đặt hay không
+    3. 
+  */
 }
 
 module.exports = CheckoutService;
