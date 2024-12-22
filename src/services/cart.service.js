@@ -1,8 +1,12 @@
-const { cart } = require("../models/cart.model");
+const { NotFoundError } = require('../core/error.response');
+const { cart } = require('../models/cart.model');
+const { getProductById } = require('../models/repositories/product.repo');
 
 /*
   Key features: Cart Service
   - Add product to cart [User]
+  Có 2 trường hợp, một là đã có cart rồi , add vô cart
+  2 là chưa có cart phải tạo mới
   - Reduce product quantity by one [User]
   - Increase product quantity by one [User]
   - Get cart [User]
@@ -18,7 +22,7 @@ class CartService {
 	    •	The options object (upsert: true) ensures a new cart is created if it doesn’t exist.
 	    •	The new: true option ensures the updated cart is returned after the operation.
     */
-    const query = { cart_userId: userId, cart_state: "active" };
+    const query = { cart_userId: userId, cart_state: 'active' };
     const updateOrInsert = {
       $addToSet: {
         cart_products: product,
@@ -34,10 +38,10 @@ class CartService {
     const { quantity, productId } = product;
     const query = {
       cart_userId: userId,
-      cart_state: "active",
-      "cart_products.productId": productId,
+      cart_state: 'active',
+      'cart_products.productId': productId,
     };
-    const update = { $inc: { "cart_products.$.quantity": quantity } };
+    const update = { $inc: { 'cart_products.$.quantity': quantity } };
     return await cart.findOneAndUpdate(query, update);
   }
 
@@ -62,39 +66,39 @@ class CartService {
 
   // update cart
   /*
-shop_order_ids: [
-  {
-    shopId,
-    item_products: [
+    shop_order_ids: [
       {
-        quantity,
-        price,
         shopId,
-        old_quantity,
-        productId
+        item_products: [
+          {
+            quantity,
+            price,
+            shopId,
+            old_quantity,
+            productId
+          }
+        ],
+        version
       }
-    ],
-    version
-  }
-]
-*/
-
-  static async addToCartV2({ userId, product = {} }) {
+    ]
+  */
+  static async addToCartV2({ userId, shop_order_ids = [] }) {
     const { productId, quantity, old_quantity } =
       shop_order_ids[0]?.item_products[0];
-
     // Check product
-    const foundProduct = await getProductById(productId);
-    if (!foundProduct) throw new NotFoundError("");
+    const foundProduct = await getProductById({ id: productId });
+    if (!foundProduct) throw new NotFoundError('');
 
     // Compare
-    if (foundProduct.product_shop.toString() !== shop_order_ids[0]?.shopId) {
-      throw new NotFoundError("Product do not belong to the shop");
+    if (foundProduct?.product_shop.toString() !== shop_order_ids[0]?.shopId) {
+      throw new NotFoundError('Product do not belong to the shop');
     }
 
     if (quantity === 0) {
       // DELETED
     }
+
+    /* quantity và old_quantity được truyền từ frontend. VD đang có số lượng là 10 giảm xuống 8 thì sẽ là 8 - 10 = -2; câu update $inc nhận giá trị -2 sẽ giảm bớt số lượng từ 10 xuống thành 8 được truy vấn xuống db */
 
     return await CartService.updateUserCartQuantity({
       userId,
@@ -106,7 +110,7 @@ shop_order_ids: [
   }
 
   static async deleteUserCart({ userId, productId }) {
-    const query = { cart_userId: userId, cart_state: "active" },
+    const query = { cart_userId: userId, cart_state: 'active' },
       updateSet = {
         $pull: {
           cart_products: {
@@ -117,6 +121,11 @@ shop_order_ids: [
 
     const deleteCart = await cart.updateOne(query, updateSet);
     return deleteCart;
+  }
+
+  static async getListUserCart({ userId }) {
+    const query = { cart_userId: +userId, cart_state: 'active' };
+    return await cart.findOne(query).lean();
   }
 }
 

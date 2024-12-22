@@ -48,5 +48,5 @@ const cartSchema = new Schema(
 );
 
 module.exports = {
-  model: model(DOCUMENT_NAME, cartSchema),
+  cart: model(DOCUMENT_NAME, cartSchema),
 };

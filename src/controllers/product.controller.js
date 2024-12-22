@@ -17,7 +17,7 @@ class ProductController {
 
   updateProduct = async (req, res) => {
     const productType = req.body.product_type;
-    const productId = req.params.productId;
+    const productId = req.params.product_id;
     const productPayload = { ...req.body, product_shop: req.user.userId };
     return new SuccessResponse({
       message: "Update product successfully",
@@ -90,7 +90,7 @@ class ProductController {
       message: "Publish product successfully",
       metadata: await ProductFactoryV2.publishProductByShop({
         product_shop: req.user.userId,
-        product_id: req.params.id,
+        product_id: req.params.product_id,
       }),
     }).send(res);
   };
@@ -99,7 +99,7 @@ class ProductController {
       message: "Unpublish product successfully",
       metadata: await ProductFactoryV2.unPublishProductByShop({
         product_shop: req.user.userId,
-        product_id: req.params.id,
+        product_id: req.params.product_id,
       }),
     }).send(res);
   };

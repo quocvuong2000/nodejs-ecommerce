@@ -75,6 +75,7 @@ class ProductFactory {
       "product_price",
       "product_thumb",
       "product_description",
+      "product_shop",
     ]),
     limit = 50,
     page = 1,

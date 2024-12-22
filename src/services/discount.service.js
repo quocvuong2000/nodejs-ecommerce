@@ -1,12 +1,12 @@
-"use strict";
-const { BadRequestError, NotFoundError } = require("../core/error.response");
+'use strict';
+const { BadRequestError, NotFoundError } = require('../core/error.response');
 const {
   findAllDiscountCodeUnselect,
   checkDiscountExistsByShop,
-} = require("../models/repositories/discount.repo");
-const { findAllProducts } = require("../models/repositories/product.repo");
+} = require('../models/repositories/discount.repo');
+const { findAllProducts } = require('../models/repositories/product.repo');
 
-const discount = require("../models/discount.model");
+const discount = require('../models/discount.model');
 /*
   Discount Services
   1 – Generator Discount Code [Shop | Admin]
@@ -50,7 +50,7 @@ class DiscountService {
     });
 
     if (foundDiscount && foundDiscount.discount_is_active) {
-      throw new BadRequestError("Discount code already exists!");
+      throw new BadRequestError('Discount code already exists!');
     }
 
     const newDiscount = await discount.create({
@@ -75,7 +75,7 @@ class DiscountService {
   }
 
   static async updateDiscountCode(payload) {
-    const { id, payload } = payload;
+    const { id } = payload;
     const updatedDiscount = await discount.findByIdAndUpdate(id, payload, {
       new: true,
     });
@@ -91,28 +91,28 @@ class DiscountService {
       .lean();
 
     if (!foundDiscount || !foundDiscount.discount_is_active) {
-      throw new NotFoundError("Discount code not found!");
+      throw new NotFoundError('Discount code not found!');
     }
 
     const { discount_product_ids, discount_applies_to } = foundDiscount;
 
     let products;
 
-    if (discount_applies_to === "specific") {
+    if (discount_applies_to === 'specific') {
       products = await findAllProducts({
         filter: { _id: { $in: discount_product_ids }, isPublished: true },
-        select: ["_id", "product_name", "product_price", "product_thumb"],
-        sort: "ctime",
+        select: ['_id', 'product_name', 'product_price', 'product_thumb'],
+        sort: 'ctime',
         limit,
         page,
       });
     }
 
-    if (discount_applies_to === "all") {
+    if (discount_applies_to === 'all') {
       products = await findAllProducts({
         filter: { product_shop: shopId, isPublished: true },
-        sort: "ctime",
-        select: ["_id", "product_name", "product_price", "product_thumb"],
+        sort: 'ctime',
+        select: ['_id', 'product_name', 'product_price', 'product_thumb'],
         limit,
         page,
       });
@@ -124,7 +124,7 @@ class DiscountService {
       limit: +limit,
       page: +page,
       filter: { discount_shopId: shopId, discount_is_active: true },
-      unSelect: ["discount_product_ids", "discount_applies_to", "__v"],
+      unSelect: ['discount_product_ids', 'discount_applies_to', '__v'],
     });
     return discounts;
   }
@@ -154,35 +154,44 @@ class DiscountService {
       discount_code: codeId,
       discount_shopId: shopId,
     });
+    const {
+      discount_start_date,
+      discount_end_date,
+      discount_min_order_value,
+      discount_max_uses_per_user,
+      discount_users_used,
+      discount_type,
+      discount_is_active,
+      discount_max_uses,
+      discount_value
+    } = foundDiscount;
 
     if (!foundDiscount) {
-      throw new NotFoundError("Discount code not found!");
+      throw new NotFoundError('Discount code not found!');
     }
 
-    if (!foundDiscount.discount_is_active) {
-      throw new BadRequestError("Discount code has expired!");
+    if (!discount_is_active) {
+      throw new BadRequestError('Discount code has expired!');
     }
 
-    if (!foundDiscount.discount_max_uses) {
-      throw new BadRequestError("Discount code has expired!");
+    if (!discount_max_uses) {
+      throw new BadRequestError('Discount code are out of stock!');
     }
-    if (!discount_is_active) throw new NotFoundError("discount expired!");
-    if (discount_max_uses) throw new NotFoundError("discount are out!");
-    if (
-      new Date() < new Date(discount_start_date) ||
-      new Date() > new Date(discount_end_date)
-    ) {
-      throw new NotFoundError("discount code has expired!");
-    }
+    // if (
+    //   new Date() < new Date(discount_start_date) ||
+    //   new Date() > new Date(discount_end_date)
+    // ) {
+    //   throw new NotFoundError('discount code has expired!');
+    // }
 
     // check xem co es gia tri toi thieu khong?
     let totalOrder = 0;
-    if (discount_min_order_value > 0) {
-      // get total
-      totalOrder = products.reduce((acc, product) => {
-        return acc + product.quantity * product.price;
-      }, 0);
+    // get total
+    totalOrder = products.reduce((acc, product) => {
+      return acc + product.quantity * product.price;
+    }, 0);
 
+    if (discount_min_order_value > 0) {
       if (totalOrder < discount_min_order_value) {
         throw new NotFoundError(
           `discount requires a minimum order value of ${discount_min_order_value}!`
@@ -200,15 +209,15 @@ class DiscountService {
     }
 
     // check xem discount nay la fixed_amount –
-    const amount =
-      discount_type === "fixed_amount"
+    const discountAmount =
+      discount_type === 'fixed_amount'
         ? discount_value
         : totalOrder * (discount_value / 100);
 
     return {
       totalOrder,
-      discount: amount,
-      totalPrice: totalOrder - amount,
+      discount: discountAmount,
+      totalPrice: totalOrder - discountAmount,
     };
   }
 
@@ -221,7 +230,6 @@ class DiscountService {
       discount_code: codeId,
       discount_shopId: shopId,
     });
-
 
     if (!foundDiscount) throw new NotFoundError("discount doesn't exist");
 

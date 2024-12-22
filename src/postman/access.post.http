@@ -3,10 +3,10 @@
 
 POST {{url_dev}}/shop/signup
 Content-Type: application/json
-x-api-key: 
+x-api-key: d2e39e0825f8312ef436af0938d3db7a7fe9339c2b997838557e35e2334ea0ead125c2795c5d0255030c185157758402add484d974f1ece484043be5f2b27242
 
 {
-  "name" : "vuongadmin",
-  "email" : "vuongadmin@test.com",
+  "name" : "vuongadmin1",
+  "email" : "vuongadmin1@test.com",
   "password" : "quocvuong42"
 }
