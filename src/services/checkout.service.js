@@ -107,8 +107,13 @@ class CheckoutService {
   /*
     1. Kiểm kê lại đơn hàng có đúng hay không
     2. Check trong kho hàng (inventory) có tồn tại đủ sl hàng mà người dùng có đặt hay không
-    3. 
+    3.
   */
+  static async orderByUser({ cartId, userId, shop_order_ids = [] }) {
+    const { checkout_order, shop_order_ids, shop_order_ids_new } =
+      await CheckoutService.checkoutReview({ cartId, userId, shop_order_ids });
+    const products = shop_order_ids_new.flatMap((item) => item.item_products);
+  }
 }
 
 module.exports = CheckoutService;
