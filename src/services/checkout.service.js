@@ -5,6 +5,7 @@ const {
   checkProductsByServer,
 } = require('../models/repositories/product.repo');
 const { getDiscountAmount } = require('./discount.service');
+const { acquireLock, releaseLock } = require('./redis.service');
 
 class CheckoutService {
   // login and without login
@@ -113,6 +114,21 @@ class CheckoutService {
     const { checkout_order, shop_order_ids, shop_order_ids_new } =
       await CheckoutService.checkoutReview({ cartId, userId, shop_order_ids });
     const products = shop_order_ids_new.flatMap((item) => item.item_products);
+    const acquireProduct = [];
+    console.log('products', products);
+    for (let i = 0; i < products.length; i++) {
+      const { productId, quantity } = products[i];
+      const keyLock = await acquireLock(productId, quantity, cartId);
+      acquireProduct.push(keyLock ? true : false);
+      if(keyLock) {
+        await releaseLock()
+      }
+    }
+
+    // check if co mot san pham het han trong kho
+    if (acquireProduct.includes(false)) {
+      throw new BadRequestError('Mot so san pham da duoc cap nhat, vui long thu lai!');
+    }
   }
 }
 
