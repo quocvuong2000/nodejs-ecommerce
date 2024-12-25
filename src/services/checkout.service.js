@@ -6,7 +6,7 @@ const {
 } = require('../models/repositories/product.repo');
 const { getDiscountAmount } = require('./discount.service');
 const { acquireLock, releaseLock } = require('./redis.service');
-
+import order from '../models/order.model';
 class CheckoutService {
   // login and without login
 
@@ -110,7 +110,13 @@ class CheckoutService {
     2. Check trong kho hàng (inventory) có tồn tại đủ sl hàng mà người dùng có đặt hay không
     3.
   */
-  static async orderByUser({ cartId, userId, shop_order_ids = [] }) {
+  static async orderByUser({
+    cartId,
+    userId,
+    shop_order_ids = [],
+    user_address,
+    user_payment,
+  }) {
     const { checkout_order, shop_order_ids, shop_order_ids_new } =
       await CheckoutService.checkoutReview({ cartId, userId, shop_order_ids });
     const products = shop_order_ids_new.flatMap((item) => item.item_products);
@@ -120,15 +126,58 @@ class CheckoutService {
       const { productId, quantity } = products[i];
       const keyLock = await acquireLock(productId, quantity, cartId);
       acquireProduct.push(keyLock ? true : false);
-      if(keyLock) {
-        await releaseLock()
+      if (keyLock) {
+        await releaseLock();
       }
     }
 
     // check if co mot san pham het han trong kho
     if (acquireProduct.includes(false)) {
-      throw new BadRequestError('Mot so san pham da duoc cap nhat, vui long thu lai!');
+      throw new BadRequestError(
+        'Mot so san pham da duoc cap nhat, vui long thu lai!'
+      );
     }
+
+    const newOrder = await order.create({
+      order_userId: userId,
+      order_checkout: checkout_order,
+      order_shipping: user_payment,
+      order_payment: user_payment,
+      order_products: shop_order_ids_new,
+      order_trackingNumber: '#0000118052022',
+      order_status: 'pending',
+    });
+
+    // truong hop: neu insert thanh cong , thi remove product co trong cart
+    if (newOrder) {
+      await CartService.deleteUserCart({ userId, productId: cartId });
+    }
+
+    return newOrder;
+  }
+
+  // > Query Orders [Users]
+  static async getOrdersByUser() {
+    // Implementation for fetching all orders for a user
+  }
+
+  // > Query Order Using Id [Users]
+  static async getOneOrderByUser() {
+    // Implementation for fetching a single order by ID for a user
+  }
+
+  /*
+  > Cancel Order [Users]
+  */
+  static async cancelOrderByUser() {
+    // Implementation for canceling an order by a user
+  }
+
+  /*
+  > Update Order Status [Shop | Admin]
+  */
+  static async updateOrderStatusByShop() {
+    // Implementation for updating order status by shop or admin
   }
 }
 
