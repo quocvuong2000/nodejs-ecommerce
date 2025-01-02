@@ -6,7 +6,7 @@ const {
 } = require('../models/repositories/product.repo');
 const { getDiscountAmount } = require('./discount.service');
 const { acquireLock, releaseLock } = require('./redis.service');
-import order from '../models/order.model';
+const order = require('../models/order.model');
 class CheckoutService {
   // login and without login
 
@@ -117,7 +117,7 @@ class CheckoutService {
     user_address,
     user_payment,
   }) {
-    const { checkout_order, shop_order_ids, shop_order_ids_new } =
+    const { checkout_order, shop_order_ids_new } =
       await CheckoutService.checkoutReview({ cartId, userId, shop_order_ids });
     const products = shop_order_ids_new.flatMap((item) => item.item_products);
     const acquireProduct = [];

@@ -4,7 +4,8 @@ const morgan = require('morgan');
 const helmet = require('helmet');
 const compression = require('compression');
 const app = express();
-
+const redisPubSubService = require("./services/redisPubSub.service");
+redisPubSubService.connect();
 // init middlewares
 //LOG
 app.use(morgan('dev'));
@@ -13,7 +14,10 @@ app.use(helmet());
 app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+// test pub sub redis
+require("./tests/inventory.test");
+const productTest = require("./tests/product.test");
+productTest.purchaseProduct({productId: 1, quantity: 1});
 // init db
 require('./dbs/init.mongodb');
 // const { checkOverload } = require('./helpers/check.connect');

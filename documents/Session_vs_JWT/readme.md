@@ -1,0 +1,7 @@
+- Session based authentication
+  - User Login -> Authenticate -> create session -> store in DB or MemCache (store userID, session expiration time) -> server send back with the unique of session ID usually come with cookie
+  - user access page -> request with cookie -> verify session from the session store -> response data
+  -
+  - One of the most advandtage of the session is revoking the session is easy since the session is store in the BE we can
+  - in the distributed session
+  - 
