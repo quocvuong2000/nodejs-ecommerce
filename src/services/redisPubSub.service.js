@@ -2,27 +2,38 @@ const Redis = require("redis");
 
 class RedisPubSubService {
   constructor() {
-    this.client = Redis.createClient(); // Use a single client instance
+    this.client = Redis.createClient();
     this.publisher = this.client.duplicate();
     this.subscriber = this.client.duplicate();
   }
 
-  async connect() {
+  async init() {
+    await this.client.connect();
     await this.publisher.connect();
     await this.subscriber.connect();
   }
+
 
   async publish(channel, message) {
     try {
       await this.publisher.publish(channel, message);
       return true;
     } catch (err) {
+      console.error('Publish failed:', err);
       throw err;
     }
   }
 
   async subscribe(channel, callback) {
-    await this.subscriber.subscribe(channel, callback);
+    try {
+      await this.subscriber.subscribe(channel, (message) => {
+        console.log(`Received message on ${channel}: ${message}`);
+        callback(message);
+      });
+    } catch (err) {
+      console.error('Subscribe failed:', err);
+      throw err;
+    }
   }
 }
 
