@@ -1,3 +1,5 @@
+const { findProduct } = require('../models/repositories/product.repo');
+
 class CommentService {
   static async createComment({
     productId,
@@ -61,6 +63,85 @@ class CommentService {
 
     await comment.save();
     return comment;
+  }
+
+  static async getCommentsByParentId({
+    productId,
+    parentCommentId = null,
+    limit = 50,
+    offset = 0, // skip
+  }) {
+    if (parentCommentId) {
+      const parent = await Comment.findById(parentCommentId);
+      if (!parent) throw new NotFoundError('Not found comment for product');
+
+      const comments = await Comment.find({
+        comment_productId: productId,
+        comment_left: { $gt: parent.comment_left },
+        comment_right: { $lte: parent.comment_right },
+      })
+        .select({
+          comment_left: 1,
+          comment_right: 1,
+          comment_content: 1,
+          comment_parentId: 1,
+        })
+        .sort({ comment_left: 1 });
+
+      return comments;
+    }
+
+    const comments = await Comment.find({
+      comment_productId: productId,
+      comment_parentId: comment_parentId,
+    })
+      .select({
+        comment_left: 1,
+        comment_right: 1,
+        comment_content: 1,
+        comment_parentId: 1,
+      })
+      .sort({ comment_left: 1 });
+    return comments;
+  }
+
+  static async deleteComment({ commentId, productId }) {
+    // Check product
+    const foundProduct = await findProduct({ id: productId });
+    if (!foundProduct) throw new NotFoundError('Product does not exist');
+    // check comment
+    const foundComment = await Comment.findById(commentId);
+    if (!foundComment) throw new NotFoundError('Comment does not exist');
+    // check comment width and remove with condition gte left and lte right
+    const leftValue = foundComment.comment_left;
+    const rightValue = foundComment.comment_right;
+
+    const width = rightValue - leftValue + 1;
+
+    await Comment.deleteMany({
+      comment_productId: productId,
+      comment_left: { $gte: leftValue, $lte: rightValue },
+    });
+
+    await Comment.updateMany(
+      {
+        comment_productId: productId,
+        comment_left: { $lt: leftValue },
+      },
+      {
+        $inc: { comment_left: -width },
+      }
+    );
+
+    await Comment.updateMany(
+      {
+        comment_productId: productId,
+        comment_right: { $gt: rightValue },
+      },
+      {
+        $inc: { comment_right: -width },
+      }
+    );
   }
 }
 
