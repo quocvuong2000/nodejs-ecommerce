@@ -1,2 +1,2 @@
 - Hàng đợi tin nhắn
-- 
+- vip dùng push , vãng lai dùng pull
