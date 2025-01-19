@@ -58,3 +58,6 @@ CMD !== ENTRYPOINT (can't be override)
 
 - docker build -t ...
 - docker run -it <name> sh (shell mode)
+
+- docker run -p 5173:5173 -v "$(pwd):/app" -v /app/node_modules react-docker
+- remember to "--save" in package.json in vite
