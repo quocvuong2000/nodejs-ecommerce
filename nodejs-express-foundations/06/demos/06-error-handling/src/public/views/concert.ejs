@@ -1,0 +1,68 @@
+<!-- views/concert.ejs -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Globoticket</title>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/normalize.css" />
+    <link rel="stylesheet" href="/css/main.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <a href="/concerts/">
+          <h1><img src="/img/globoticket-horizontal-white.svg"></h1>
+        </a>
+        <div class="header-cart">
+          <img src="/img/cart.svg" />
+          <p><span>0</span> tickets</p>
+        </div>
+      </header>
+      <section class="section-details">
+        <div class="details-left">
+          <img src="<%= concert_info.concert_image %>" />
+        </div>
+        <div class="details-right">
+          <p class="concert-type">Concerts</p>
+          <h2><%= concert_info.concert_artist %></h2>
+          <p class="concert-date"><%= concert_info.concert_date %></p>
+          <p class="concert-description"><%= concert_info.concert_description %></p>
+          <div class="concert-price-container">
+            <p class="concert-price">$<%= concert_info.concert_price %></p>
+            <p class="concert-per-ticket">per ticket</p>
+          </div>
+        </div>
+      </section>
+      <section class="section-details divider">
+      </section>
+      <section class="section-details">
+        <div class="details-left">
+        </div>
+        <div class="details-right details-right-purchasing">
+          <div class="concert-purchase-button">
+            <a href="#"><button>Place Order</button></a>
+          </div>
+        </div>
+      </section>
+    </div>
+    <script type="text/javascript">
+      let addToCartButton = document.querySelector('.concert-purchase-button a button')
+      addToCartButton.addEventListener('click', (event) => {
+        event.preventDefault()
+        let body = JSON.stringify({
+          'concert_id': '<%= concert_info.concert_id %>',
+          'concert_artist': '<%= concert_info.concert_artist %>',
+          'concert_price': '<%= concert_info.concert_price %>',
+          'concert_currency': 'usd',
+        })
+        fetch('http://localhost:3000/save_to_cart', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: body
+        })
+      }, false)
+    </script>
+  </body>
+</html>
