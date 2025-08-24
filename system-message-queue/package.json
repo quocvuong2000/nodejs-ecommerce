@@ -1,0 +1,21 @@
+{
+  "name": "system-message-queue",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "amqplib": "^0.10.8",
+    "dotenv": "^17.2.1",
+    "lodash": "^4.17.21",
+    "mongoose": "^8.18.0"
+  },
+  "devDependencies": {
+    "jest": "^30.0.5"
+  }
+}
