@@ -1,0 +1,181 @@
+# Docker Compose version - specifies format and available features
+# Equivalent: No direct docker command equivalent
+version: '3.8'
+
+# Services section - defines all containers we want to run
+# Think of this as: "Here are all the applications in my system"
+services:
+
+  # ========================================
+  # MYSQL MASTER SERVICE
+  # ========================================
+  mysql-master:
+    # Docker image to use - same as: docker run mysql:8.0
+    image: mysql:8.0
+
+    # Custom container name - same as: docker run --name mysql-master
+    # Without this, Docker generates random names like "happy_einstein"
+    container_name: mysql-master
+
+    # Environment variables - same as: docker run -e VAR=value
+    # These configure MySQL when container starts
+    environment:
+      # Required: MySQL root password - container won't start without this
+      MYSQL_ROOT_PASSWORD: rootpassword
+
+      # Optional: Auto-create database on startup
+      MYSQL_DATABASE: testdb
+
+      # Optional: Create non-root user automatically
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppassword
+
+    # Port mapping - same as: docker run -p 3306:3306
+    # Format: "HOST_PORT:CONTAINER_PORT"
+    # This allows your computer to connect to MySQL on port 3306
+    ports:
+      - "3306:3306"
+
+    # Volume mounts - same as: docker run -v source:target
+    volumes:
+      # Mount config directory for MySQL settings
+      # Same as: -v $(pwd)/master-config:/etc/mysql/conf.d
+      - ./master-config:/etc/mysql/conf.d
+
+      # Mount named volume for MySQL data persistence
+      # Same as: -v mysql-master-data:/var/lib/mysql
+      - master-data:/var/lib/mysql
+
+      # Mount initialization SQL script
+      # Same as: -v $(pwd)/init-master.sql:/docker-entrypoint-initdb.d/init-master.sql
+      - ./init-master.sql:/docker-entrypoint-initdb.d/init-master.sql
+
+    # Network assignment - same as: docker run --network mysql-network
+    # Connects container to our custom network for better DNS resolution
+    networks:
+      - mysql-network
+
+    # MySQL-specific startup parameters
+    # Same as: docker run mysql:8.0 --server-id=1 --log-bin=mysql-bin --binlog-format=ROW
+    command: --server-id=1 --log-bin=mysql-bin --binlog-format=ROW
+
+    # Restart policy - if container crashes, restart it automatically
+    # Options: no, always, on-failure, unless-stopped
+    restart: unless-stopped
+
+  # ========================================
+  # MYSQL SLAVE SERVICE
+  # ========================================
+  mysql-slave:
+    # Same MySQL image as master
+    image: mysql:8.0
+
+    # Different container name - same as: docker run --name mysql-slave
+    container_name: mysql-slave
+
+    # Same environment variables as master
+    # In real production, you might use different passwords
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: testdb
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppassword
+
+    # Different host port to avoid conflict with master
+    # Same as: docker run -p 3307:3306
+    # Master uses 3306, slave uses 3307 on host
+    ports:
+      - "3307:3306"
+
+    # Volume mounts for slave
+    volumes:
+      # Slave-specific config directory
+      - ./slave-config:/etc/mysql/conf.d
+
+      # Separate named volume for slave data
+      - slave-data:/var/lib/mysql
+
+      # Note: No init script for slave - only master needs initial setup
+
+    # Same network as master for communication
+    networks:
+      - mysql-network
+
+    # Slave-specific MySQL parameters
+    # Same as: docker run mysql:8.0 --server-id=2 --relay-log=mysql-relay-bin --read-only=1
+    command: --server-id=2 --relay-log=mysql-relay-bin --read-only=1
+
+    # Startup dependency - slave should start AFTER master
+    # Same as: manually ensuring start order with docker commands
+    depends_on:
+      - mysql-master
+
+    restart: unless-stopped
+
+  # ========================================
+  # PHPMYADMIN SERVICE (Database Management UI)
+  # ========================================
+  phpmyadmin:
+    # Pre-built phpMyAdmin image
+    # Same as: docker run phpmyadmin/phpmyadmin
+    image: phpmyadmin/phpmyadmin
+
+    container_name: phpmyadmin
+
+    # phpMyAdmin configuration
+    environment:
+      # Allow connection to any MySQL server (not just localhost)
+      PMA_ARBITRARY: 1
+
+      # Optional: Pre-configure specific hosts
+      # PMA_HOSTS: mysql-master,mysql-slave
+
+    # Web interface port - same as: docker run -p 8080:80
+    ports:
+      - "8080:80"
+
+    # Same network to access MySQL containers
+    networks:
+      - mysql-network
+
+    # Wait for both MySQL servers before starting
+    depends_on:
+      - mysql-master
+      - mysql-slave
+
+    restart: unless-stopped
+
+# ========================================
+# VOLUMES SECTION
+# ========================================
+# Named volumes for data persistence
+# Same as: docker volume create volume-name
+volumes:
+  # Master MySQL data storage
+  # Same as: docker volume create master-data
+  master-data:
+    # Default driver (local filesystem)
+    driver: local
+
+  # Slave MySQL data storage
+  # Same as: docker volume create slave-data
+  slave-data:
+    driver: local
+
+# ========================================
+# NETWORKS SECTION
+# ========================================
+# Custom networks for container communication
+# Same as: docker network create network-name
+networks:
+  # Custom network for MySQL replication
+  # Same as: docker network create mysql-network
+  mysql-network:
+    # Bridge driver (default, containers can communicate)
+    driver: bridge
+
+    # Optional: Custom IP range configuration
+    ipam:
+      config:
+        # Assign specific subnet for predictable IPs
+        - subnet: 172.20.0.0/16
